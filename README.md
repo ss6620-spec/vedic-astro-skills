@@ -10,12 +10,13 @@
 
 ## ✨ v4.0 核心特性
 
-- 🔄 **通用提取架构** — Reader不再绑定特定软件，支持任意来源的星盘（JH/Parashara's Light/截图/手工文本）
-- 🧮 **16条数学校验** — 包括SAV/BAV常量、Ra-Ke对冲、燃烧检测、行星战争、Sandhi/Gandanta、盈月亏月等
-- 🎯 **需求驱动的数据契约** — 三级数据清单（🔴关键/🟡重要/🟢可选），缺口自动分析
-- 🛡️ **正反双审(Double Blind Audit)** — 所有Q&A强制列出支持和制约数据，防止AI偏见
-- 🕐 **时间校准引擎** — 通过5个人生事件逆推出生时间，精度±5分钟
-- 📊 **D9身份继承矩阵** — 五维交叉分析（身份继承/内核品质/安全分级/变现阻力/果实投射）
+- 🔄 **双通道提取** — PDF强制PyMuPDF+AI视觉双通道交叉验证，零漏提
+- 🧩 **16条数学校验** — SAV/BAV常量、Ra-Ke对冲、燃烧检测、行星战争、Sandhi/Gandanta、盈月亏月
+- 🎯 **需求驱动的数据契约** — 三级清单（🔴关键/🟡重要/🟢可选），缺口自动分析
+- 🛡️ **正反双审** — 所有Q&A强制列出支持和制约数据，防止AI偏见
+- ⏱️ **时间精度联动** — 出生时间精度不足时自动禁用高敏感分盘，推荐校准
+- 📝 **陈述式验前事** — 像真正占星师的"验身"，直接说出推断而非提问
+- 🕰️ **时间校准引擎** — 5个人生事件逆推出生时间，精度±5分钟，且不强制改时间
 
 ---
 
@@ -61,7 +62,7 @@
 
 > **Step 1** → 发送星盘PDF/截图，说 **"读盘"**
 >
-> AI运行 `vedic-reader`：自适应提取 → 16条校验 → 盘面初验 → 输出 structured_data.md
+> AI运行 `vedic-reader`：双通道提取 → 16条校验 → 验前事 → 输出 structured_data.md
 >
 > **Step 2** → 说 **"开始分析"**
 >
@@ -81,12 +82,12 @@
 - 存在 → 直接使用，深度模式
 - 不存在 → 提示先运行reader
 
-### 输入要求
+### 输入方式（按推荐程度排序）
 
-- 星盘PDF（任何吠陀占星软件导出均可）
-- 或星盘截图（南印/北印盘均可识别）
-- 或直接粘贴文本格式的行星数据
-- Python + PyMuPDF (`pip install pymupdf`) 用于PDF文本提取
+1. 📝 **文字粘贴**（最推荐）— 从占星软件复制表格直接粘贴，零误差
+2. 📄 **PDF上传** — 任何吠陀占星软件导出均可
+3. 📸 **截图** — 南印/北印盘均可识别（推荐南印度 Regular）
+4. Python + PyMuPDF (`pip install pymupdf`) 用于PDF文本提取
 
 ---
 
@@ -98,7 +99,7 @@ vedic-astro-skills/
 ├── LICENSE
 ├── antigravity/skills/          # Antigravity 版本
 │   ├── vedic-reader/
-│   │   ├── SKILL.md             # 读盘引擎 (470行)
+│   │   ├── SKILL.md             # 读盘引擎 (586行)
 │   │   └── resources/
 │   │       ├── data_contract.md # 数据契约 (204行)
 │   │       └── validation_rules.md # 16条校验规则 (172行)
@@ -117,7 +118,7 @@ vedic-astro-skills/
 │   ├── vedic-love/
 │   │   └── SKILL.md             # 恋爱时机引擎 (234行)
 │   └── vedic-rectifier/
-│       ├── SKILL.md             # 时间校准引擎 (263行)
+│       ├── SKILL.md             # 时间校准引擎 (281行)
 │       ├── resources/
 │       │   └── event_house_map.md # 事件-宫位映射
 │       └── scripts/
@@ -125,7 +126,7 @@ vedic-astro-skills/
 └── claude-code/skills/          # Claude Code 版本 (同上)
 ```
 
-**总计：15个文件 | 3,435行 | 115.7KB**
+**总计：15个文件 | 3,569行 | 121.1KB**
 
 ---
 
@@ -150,12 +151,12 @@ cp -r claude-code/skills/vedic-* [your-claude-code-skills-path]/
 
 | 版本 | 日期 | 改动 |
 |------|------|------|
-| **v4.0** | 2026-05-09 | 双通道OCR + 验前事重写 + 时间精度联动分盘 + Rectifier纠偏 |
+| **v4.0** | 2026-05-10 | 双通道OCR + 验前事重写 + 时间精度联动分盘 + Rectifier纠偏 |
 | v3.2 | 2026-05-08 | Reader通用提取架构 + 引导开场白 + 触发词扩展 |
 | v3.1 | 2026-05-07 | Chehil对比合入（燃烧/行星战争/Dig Bala） + 结构优化 |
 | v3.0 | 2026-05-06 | 五Skill架构确立 + Rectifier + 正反双审 |
-| v2.x | 2026-05-05 | D9身份继承矩阵 + Badhaka/Maraka审计 |
-| v1.x | 2026-05-04 | Q&A规则外置 + 报告打包脚本 |
+
+详见 [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
