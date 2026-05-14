@@ -1,4 +1,4 @@
-# 🔱 Vedic Astro Skills v4.0
+# 🔱 Vedic Astro Skills v4.2
 
 > AI驱动的吠陀占星分析系统。五个专精Skill协同工作，从星盘数据提取到完整人生审计。
 >
@@ -8,15 +8,16 @@
 
 ---
 
-## ✨ v4.0 核心特性
+## ✨ v4.2 核心特性
 
 - 🔄 **双通道提取** — PDF强制PyMuPDF+AI视觉双通道交叉验证，零漏提
 - 🧩 **16条数学校验** — SAV/BAV常量、Ra-Ke对冲、燃烧检测、行星战争、Sandhi/Gandanta、盈月亏月
 - 🎯 **需求驱动的数据契约** — 三级清单（🔴关键/🟡重要/🟢可选），缺口自动分析
 - 🛡️ **正反双审** — 所有Q&A强制列出支持和制约数据，防止AI偏见
 - ⏱️ **时间精度联动** — 出生时间精度不足时自动禁用高敏感分盘，推荐校准
-- 📝 **陈述式验前事** — 像真正占星师的"验身"，直接说出推断而非提问
+- 📝 **信号驱动验前事** — 弹性3-5条，按信号强度选择，不凑数不硬猜
 - 🕰️ **时间校准引擎** — 5个人生事件逆推出生时间，精度±5分钟，且不强制改时间
+- 💍 **婚姻三阶段模型** — L7关系确立 → 9宫法律确认 → 11宫社会公开，替代单点预测
 
 ---
 
@@ -151,7 +152,8 @@ cp -r claude-code/skills/vedic-* [your-claude-code-skills-path]/
 
 | 版本 | 日期 | 改动 |
 |------|------|------|
-| **v4.0** | 2026-05-10 | 双通道OCR + 验前事重写 + 时间精度联动分盘 + Rectifier纠偏 |
+| **v4.2** | 2026-05-14 | 信号驱动验前事 + 婚姻三阶段模型 + 多阶段事件推导 |
+| v4.0 | 2026-05-10 | 双通道OCR + 验前事重写 + 时间精度联动分盘 + Rectifier纠偏 |
 | v3.2 | 2026-05-08 | Reader通用提取架构 + 引导开场白 + 触发词扩展 |
 | v3.1 | 2026-05-07 | Chehil对比合入（燃烧/行星战争/Dig Bala） + 结构优化 |
 | v3.0 | 2026-05-06 | 五Skill架构确立 + Rectifier + 正反双审 |
@@ -167,6 +169,24 @@ cp -r claude-code/skills/vedic-* [your-claude-code-skills-path]/
 - **分盘**: D1/D9/D10/D4/D5 (精度依赖出生时间)
 - **校验**: 16条数学校验（SAV=337、BAV行常量、Ra-Ke对冲、燃烧检测等）
 - **反偏见**: 正反双审机制 — 禁止只挑用户想听的数据
+
+## ☕ Support / 赞赏
+
+If this project helps you, consider buying me a coffee:
+
+如果这个项目对你有帮助，欢迎赞赏支持：
+
+<p align="center">
+  <img src="assets/wechat.jpg" width="200" alt="WeChat Pay">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/alipay.jpg" width="200" alt="Alipay">
+</p>
+
+<p align="center">
+  <sub>WeChat Pay（微信支付） &nbsp;|&nbsp; Alipay（支付宝）</sub>
+</p>
+
+---
 
 ## License
 
