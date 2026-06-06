@@ -1,6 +1,7 @@
 # structured_data.md 数据契约
 
-> 本文档定义了reader输出、core/career/love消费的数据标准。
+> 本文档定义了 structured_data.md 的数据标准。
+> 数据由 vedic-calculator 或 vedic-reader 生成，由 core/career/love 消费。
 > 所有字段为必须，除非标注[可选]。
 
 ---
