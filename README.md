@@ -23,7 +23,7 @@
 
 ## 📖 目录 / Table of Contents
 
-- [环境要求 / Requirements](#-环境要求--requirements)
+- [安装 / Installation](#-安装--installation)
 - [六Skill架构 / Architecture](#-六skill架构--architecture)
 - [快速开始 / Quick Start](#-快速开始--quick-start)
 - [各Skill说明 / Skill Details](#-各skill说明--skill-details)
@@ -34,13 +34,56 @@
 
 ---
 
-## 🔧 环境要求 / Requirements
+## 📦 安装 / Installation
 
-> ⚠️ **vedic-calculator 是整个系统的计算基座。**
-> 所有 Skill 的数据精度都依赖它，请在首次使用前确保环境就绪。
+### Step 1: 安装 Skill 文件 / Install skill files
+
+<details>
+<summary><b>Claude Code / Codex</b></summary>
+
+```bash
+# 从 GitHub 安装全部 6 个 skill（缺一不可）
+# Install all 6 skills from GitHub (all required)
+
+# 方式1：clone 后手动复制
+git clone https://github.com/CNWU16/vedic-astro-skills.git
+cp -r vedic-astro-skills/claude-code/skills/vedic-* ~/.codex/skills/
+# 或 cp -r vedic-astro-skills/claude-code/skills/vedic-* /Users/$USER/mcc/.codex/skills/
+
+# 方式2：逐个安装（确保 6 个全装）
+# --path antigravity/skills/vedic-reader \
+# --path antigravity/skills/vedic-calculator \   ← 不要漏掉！
+# --path antigravity/skills/vedic-core \
+# --path antigravity/skills/vedic-career \
+# --path antigravity/skills/vedic-love \
+# --path antigravity/skills/vedic-rectifier
+```
+
+</details>
+
+<details>
+<summary><b>Antigravity</b></summary>
+
+将 `antigravity/skills/` 下的 6 个文件夹复制到你的 Antigravity skills 目录：
+
+Copy all 6 folders from `antigravity/skills/` to your Antigravity skills directory:
+
+```
+vedic-reader/
+vedic-calculator/    ← 计算基座，必装！/ Required foundation!
+vedic-core/
+vedic-career/
+vedic-love/
+vedic-rectifier/
+```
+
+</details>
+
+> ⚠️ **必须安装全部 6 个 skill。** vedic-calculator 是计算基座，其他 5 个 skill 都依赖它。漏装 calculator 会导致数据精度严重下降。
 >
-> **vedic-calculator is the computational foundation of the entire system.**
-> All skills depend on it for data accuracy. Please ensure your environment is ready before first use.
+> **All 6 skills must be installed.** vedic-calculator is the computational foundation. Missing it will severely degrade data accuracy.
+
+### Step 2: 安装 Python 依赖 / Install Python dependencies
 
 | 要求 Requirement | 说明 Details |
 |:---|:---|
@@ -55,9 +98,9 @@ PyJHora>=4.8.0     # SAV/BAV + 分盘 + Shadbala / divisional charts + strength
 pytz>=2024.1       # 时区 / timezone
 ```
 
-> 💡 AI 首次运行时会自动检测环境并安装依赖。通常你不需要手动操作，但 **请确保已安装 Python 3.8~3.13。**
+> 💡 AI 首次运行时会自动检测环境并安装依赖。但 **请确保系统已安装 Python 3.8~3.13**，否则自动安装会失败。
 >
-> The AI agent will auto-detect and install dependencies on first run. You usually don't need to do anything manually, but **make sure Python 3.8~3.13 is installed.**
+> The AI agent will auto-detect and install dependencies on first run. But **make sure Python 3.8~3.13 is installed on your system**, otherwise auto-install will fail.
 
 ---
 
