@@ -1,4 +1,4 @@
-﻿"""
+"""
 Vedic Report Builder — Universal MD → HTML Pipeline
 =====================================================
 Supports ALL Vedic skill outputs: Core, Career, Love, Q&A
@@ -394,7 +394,20 @@ def build_toc(sections, lang="cn"):
     return f'<div class="toc"><h2>{toc_title}</h2><ul class="toc-list">{"".join(items)}</ul></div>'
 
 
+def _fix_table_spacing(text):
+    """确保 markdown 表格前有空行，否则解析器会把它当普通文本。"""
+    lines = text.split('\n')
+    fixed = []
+    for i, line in enumerate(lines):
+        # 如果当前行像表格行（以|开头），且上一行非空且不是表格行，补空行
+        if line.strip().startswith('|') and i > 0 and fixed and fixed[-1].strip() and not fixed[-1].strip().startswith('|'):
+            fixed.append('')
+        fixed.append(line)
+    return '\n'.join(fixed)
+
+
 def build_section(num, title, md_text):
+    md_text = _fix_table_spacing(md_text)
     body = markdown.markdown(md_text, extensions=["tables", "fenced_code"])
     return f"""
 <div class="section">
@@ -448,8 +461,8 @@ Examples:
         include_set = set(args.include.lower().split(","))
         # 定义 section key → group 映射
         group_map = {
-            "core": {"basics", "planets", "planets_a", "planets_b", "planets_c", "planets_d",
-                     "d9", "divisional", "houses", "houses_a", "life", "life2", "appendix"},
+            "core": {"core", "basics", "planets", "planets_a", "planets_b", "planets_c", "planets_d",
+                     "d9", "divisional", "divisional_a", "houses", "houses_a", "houses_b", "life", "life2", "appendix"},
             "career": {"career", "career1", "career2", "career3"},
             "love": {"love", "love1", "love2"},
             "qa": {"qa"},
