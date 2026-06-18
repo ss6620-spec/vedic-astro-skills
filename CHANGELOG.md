@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v7.0] - 2026-06-18
+
+> 💞 **vedic-synastry 合盘上线** — 七Skill架构
+
+### ✨ 新增 vedic-synastry（合盘）
+
+比较两个人的星盘，回答两人如何互相触发、关系能否承载、何时步调对上。基于 KN Rao（Parashari）+ Ashtakoota 月宿筛查。
+
+- **两段式入口**：先做不预设关系类型的中性平扫（性质指纹）→ intake 选框架 → 五层分析（双盘资格 → 月宿 → 方向性叠盘 → 时机共振 → 六维矩阵）
+- **跨盘判据纯吠陀**：整宫落点 + Graha Drishti + 度数标注；无西方 orb / 相位角 / 合成盘
+- **不给"匹配度 XX%"总分**：用六维矩阵 + 关系类型，吸引力与承载力分开看
+- **支持 romantic / business / friendship** 三种关系
+- **脚本纯标准库**：`build_synastry_data.py`（跨盘计算）+ `validate_synastry_data.py`（双盘自检），不依赖 calculator 的 venv
+- **隐私隔离**：对方的盘与报告放独立子文件夹，不污染盘主个人目录
+- 跨盘 DK 用 7K 主表，与 core/love 口径一致
+
+---
+
 ## [Unreleased] - 2026-06-09
 
 ### Codex 原生支持

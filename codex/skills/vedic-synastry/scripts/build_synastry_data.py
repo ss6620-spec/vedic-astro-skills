@@ -26,6 +26,13 @@ SPECIAL_DRISHTI = {'Mars': [4, 8], 'Jupiter': [5, 9], 'Saturn': [3, 10]}
 BENEFICS = {'Jupiter', 'Venus', 'Moon', 'Mercury'}
 MALEFICS = {'Saturn', 'Mars', 'Rahu', 'Ketu', 'Sun'}
 
+# 尊贵度英文枚举 → 中文（真实 calc 输出英文，data_contract 文档写中文）
+DIGNITY_CN = {
+    'exalted': '入旺', 'debilitated': '落陷', 'own': '入庙', 'moolatrikona': '自境',
+    'great_friend': '至友', 'friend': '友方', 'neutral': '中性',
+    'enemy': '敌方', 'great_enemy': '死敌',
+}
+
 # 行星自然友敌（标准 Parashari），用于 Graha Maitri
 NATURAL = {
     'Sun':     {'friend': {'Moon', 'Mars', 'Jupiter'}, 'enemy': {'Venus', 'Saturn'}},
@@ -222,7 +229,8 @@ class Chart:
 
     # —— 便捷访问 ——
     def dignity_of(self, planet):
-        return self.dignity.get(planet, '—')
+        v = self.dignity.get(planet, '—')
+        return DIGNITY_CN.get(v, v)
 
     def role_of(self, planet):
         """该行星在本盘掌管哪些宫（P1 角色判定的原料）。"""
@@ -280,10 +288,22 @@ def cross_aspects(a, b):
                     od = abs(diff - base)
                     lum = an in ('Sun', 'Moon') or bn in ('Sun', 'Moon')
                     tight = 7 if lum else 5
-                    orb_tag = '[紧密]' if od < tight else ('[一般]' if od < 12 else '[整宫]')
+                    tier = '紧密' if od < tight else ('一般' if od < 12 else '整宫')
+                    od_d, od_m = int(od), int(round((od - int(od)) * 60))
+                    orb_tag = f"{od_d}°{od_m:02d}'[{tier}]"
                 out.append({'a': an, 'b': bn, 'kind': kind, 'orb': orb_tag,
                             'dir': 'A↔B'})
     return out
+
+
+def same_house_resonance(a, b):
+    """双方各自把同一行星放在相同宫位（共鸣特征，如双方 Venus 都在 H6）。"""
+    rows = []
+    for p in PLANETS:
+        pa, pb = a.planets.get(p), b.planets.get(p)
+        if pa and pb and pa['house'] == pb['house']:
+            rows.append({'planet': p, 'house': pa['house']})
+    return rows
 
 
 def drishti_to_points(src, dst):
@@ -487,6 +507,17 @@ def build(a, b):
         L.append("|-------|-------|------|------|")
         for r in ca:
             L.append(f"| {r['a']} | {r['b']} | {r['kind']} | {r['orb']} |")
+    L.append("")
+
+    L.append("## 4b. 同宫共鸣（双方各自把同一行星放在相同宫位）\n")
+    res = same_house_resonance(a, b)
+    if res:
+        L.append("| 行星 | 双方共同宫位 |")
+        L.append("|------|------------|")
+        for r in res:
+            L.append(f"| {r['planet']} | {r['house']} |")
+    else:
+        L.append("（无）")
     L.append("")
 
     L.append("## 5. Graha Drishti 命中对方关键点位\n")
