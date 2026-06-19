@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 - **两段式入口**：先做不预设关系类型的中性平扫（性质指纹）→ intake 选框架 → 五层分析（双盘资格 → 月宿 → 方向性叠盘 → 时机共振 → 六维矩阵）
 - **跨盘判据纯吠陀**：整宫落点 + Graha Drishti + 度数标注；无西方 orb / 相位角 / 合成盘
 - **不给"匹配度 XX%"总分**：用六维矩阵 + 关系类型，吸引力与承载力分开看
-- **支持 romantic / business / friendship** 三种关系
+- **支持 romantic / business / friendship / family** 四种关系框架（各有专属读法；非二元友好：A/B 方向，不套性别角色）
 - **脚本纯标准库**：`build_synastry_data.py`（跨盘计算）+ `validate_synastry_data.py`（双盘自检），不依赖 calculator 的 venv
 - **隐私隔离**：对方的盘与报告放独立子文件夹，不污染盘主个人目录
 - 跨盘 DK 用 7K 主表，与 core/love 口径一致

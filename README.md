@@ -292,14 +292,15 @@ Planet-by-planet audit → D9 cross-validation → House diagnosis → Ten life 
 
 ### 💞 vedic-synastry — 合盘 / Synastry
 
-比较**两个人**的星盘：先做**不预设关系类型的中性平扫**给出关系性质，再按 **情感 / 合作 / 友谊** 框架做五层分析（双盘资格 → 月宿筛查 → 方向性叠盘 → 时机共振 → 六维矩阵）。基于 KN Rao（Parashari）+ Ashtakoota 月宿层。
+比较**两个人**的星盘：先做**不预设关系类型的中性平扫**给出关系性质，再按 **情感 / 合作 / 友谊 / 家人亲子** 框架做五层分析（双盘资格 → 月宿筛查 → 方向性叠盘 → 时机共振 → 六维矩阵）。基于 KN Rao（Parashari）+ Ashtakoota 月宿层。
 
-Compares **two** charts: starts with a neutral, relationship-type-agnostic scan, then runs a five-layer analysis under a romantic / business / friendship frame (dual-chart capacity → koota → directional overlay → timing → six-dimension matrix).
+Compares **two** charts: starts with a neutral, relationship-type-agnostic scan, then runs a five-layer analysis under a romantic / business / friendship / family frame (dual-chart capacity → koota → directional overlay → timing → six-dimension matrix).
 
 - 不给"匹配度 XX%"伪精确总分，**吸引力与承载力分开看**，用六维矩阵 + 关系类型
 - 跨盘判据纯吠陀（整宫落点 + Graha Drishti + 度数标注），无西方 orb / 合成盘
 - **需双方各一份盘**；对方可只给出生信息当场排
 - 对方的盘与报告放独立子文件夹，**不污染你的个人盘**，本地处理不外泄
+- 非传统关系 / 非二元友好：用 A/B 方向，不预设性别角色
 
 ---
 
