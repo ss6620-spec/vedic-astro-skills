@@ -7,11 +7,23 @@ v0.5: 移除所有 dashaflow fallback（错误结果比无结果更糟），fail
 v0.4: Dasha 接入 PyJHora（≤2天）
 v0.3: SAV/Shadbala fallback 显式 WARNING
 """
-import swisseph as swe
+import os, sys
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")  # 受限环境(如Claude Code)免疫OpenBLAS线程探测
+
+try:
+    import swisseph as swe
+except ImportError as e:                             # 用错python时给可执行纠正,不再含糊报错
+    sys.stderr.write(
+        "\n❌ swisseph 不可用—极可能用了系统 Python。\n"
+        "  系统 Python 装的是空壳(只有 dist-info、无 .pyd),必须改用 skill 自带 venv:\n"
+        "  Windows : vedic-calculator\\venv\\Scripts\\python.exe <脚本>\n"
+        "  Linux/Mac: vedic-calculator/venv/bin/python <脚本>\n"
+        f"  原始错误: {e}\n"
+    )
+    raise
 from datetime import datetime, timedelta
 import pytz
 import json
-import sys
 
 # dashaflow — 仅用于 dignity/jaimini（这些无 PyJHora bug，不需要修正）
 from dashaflow.dignity import get_dignity, get_compound_relationship, check_combustion, get_digbala
