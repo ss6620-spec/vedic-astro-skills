@@ -33,7 +33,21 @@ def format_structured_data(chart, transit_data, meta, user_info):
     lines.append(f"读盘方式: vedic-calculator直接计算")
     lines.append(f"Ayanamsa: Lahiri ({chart['ayanamsa']:.4f}°)")
     lines.append(f"Node模式: Mean Node")
+    if chart.get('data_sources'):
+        lines.append(f"基础盘数据源: {chart['data_sources'].get('base_chart', 'vedic-calculator')}")
+        lines.append(f"宫制: {chart['data_sources'].get('house_system', 'whole sign')}")
     lines.append("```\n")
+
+    warnings = chart.get('warnings', [])
+    if warnings:
+        lines.append("## Fallback / Warning 声明\n")
+        lines.append("```")
+        lines.append("本文件包含 swisseph-only fallback 基础排盘。")
+        lines.append("来自 swisseph fallback: Lagna、行星恒星黄经、D1、D9、D10、Nakshatra、Vimshottari Dasha fallback。")
+        lines.append("暂时跳过或降级: SAV/BAV、Shadbala、PyJHora校验；如对应模块恢复可用，应重新计算。")
+        for warning in warnings:
+            lines.append(f"- {warning}")
+        lines.append("```\n")
     
     # === 用户信息 ===
     lines.append("## 用户信息\n")
@@ -125,7 +139,9 @@ def format_structured_data(chart, transit_data, meta, user_info):
                 f"{ishta} | {kashta} | {baseline} | calc |"
             )
     lines.append("")
-    lines.append("> 来源: vedic-calculator引擎 (PyJHora + 9项修正)")
+    if 'error' in sb:
+        lines.append(f"> Shadbala 暂时跳过: {sb['error']}")
+    lines.append("> 来源: vedic-calculator引擎；PyJHora不可用时会显式标注跳过，不生成占位强度。")
     lines.append("> 如导入同一出生时间的JHora PDF，逐行对照Shadbala；有PDF的行展示PDF值，不一致时标注“calc与PDF不一致；当前采用PDF”。")
     lines.append("> 强: ≥150% | 中: 100-149% | 弱: <100%\n")
     
@@ -137,6 +153,8 @@ def format_structured_data(chart, transit_data, meta, user_info):
     sav_vals = [chart['sav'].get(s, 0) for s in SIGNS]
     total = sum(sav_vals)
     lines.append("| " + " | ".join(str(v) for v in sav_vals) + f" | {total} |")
+    if total == 0:
+        lines.append("\n> SAV/BAV 暂时跳过：当前为 swisseph fallback 基础排盘，不使用 0 值做解读。")
     lines.append("")
     
     lines.append("#### 宫位映射（按宫位，供core/career/love直接使用）")

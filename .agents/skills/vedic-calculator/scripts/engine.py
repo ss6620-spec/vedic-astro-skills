@@ -25,9 +25,31 @@ from datetime import datetime, timedelta
 import pytz
 import json
 
-# dashaflow — 仅用于 dignity/jaimini（这些无 PyJHora bug，不需要修正）
-from dashaflow.dignity import get_dignity, get_compound_relationship, check_combustion, get_digbala
-from dashaflow.jaimini import calculate_jaimini_karakas
+# dashaflow — 可选。基础 swisseph fallback 不依赖 dashaflow。
+try:
+    from dashaflow.dignity import check_combustion, get_digbala
+except ImportError as e:
+    _dashaflow_error = e
+
+    def check_combustion(planet, planet_lon, sun_lon, is_retro=False):
+        """Small swisseph-only combustion fallback."""
+        limits = {'Moon': 12, 'Mars': 17, 'Mercury': 14, 'Jupiter': 11, 'Venus': 10, 'Saturn': 15}
+        diff = abs(planet_lon - sun_lon)
+        if diff > 180:
+            diff = 360 - diff
+        return diff <= limits.get(planet, 8)
+
+    def get_digbala(planet, house):
+        """Minimal directional strength marker used when dashaflow is absent."""
+        strong_house = {
+            'Sun': 10, 'Mars': 10,
+            'Moon': 4, 'Venus': 4,
+            'Jupiter': 1, 'Mercury': 1,
+            'Saturn': 7,
+        }
+        return {'is_strong': house == strong_house.get(planet), 'source': 'swisseph_fallback'}
+else:
+    _dashaflow_error = None
 
 # ── PyJHora 精确模块（必须全部加载，否则 fail-fast）──
 _SETUP_HINT = (
@@ -70,15 +92,8 @@ except ImportError as e:
     _vargeeya_bala_pyjhora = None
     _load_errors.append(f'extras_pyjhora: {e}')
 
-# Fail-fast: 核心模块必须全部加载
-_REQUIRED = {'SAV': _av_pyjhora, 'Shadbala': _shadbala_pyjhora, 'Dasha': _dasha_pyjhora}
-_missing = [name for name, mod in _REQUIRED.items() if mod is None]
-if _missing:
-    print(f"\n❌ FATAL: 以下核心模块加载失败: {', '.join(_missing)}", file=sys.stderr)
-    for err in _load_errors:
-        print(f"   → {err}", file=sys.stderr)
-    print(_SETUP_HINT, file=sys.stderr)
-    raise ImportError(f"vedic-calculator 核心模块缺失: {', '.join(_missing)}. 请运行 setup_env.py")
+# PyJHora / dashaflow failures must not block the basic chart.  Advanced
+# modules are attempted below and skipped with warnings when unavailable.
 
 # === 配置 ===
 swe.set_sid_mode(swe.SIDM_LAHIRI)
@@ -210,6 +225,38 @@ def calc_panchamsha(longitude):
         starts = [1, 5, 11, 9, 7]    # Ta, Vi, Pi, Cp, Sc
     d5_sign_idx = starts[part] if part < 5 else sign_idx
     return SIGNS[d5_sign_idx], d5_sign_idx
+
+def calc_fallback_divisional_charts(lagna, planets):
+    """Build essential vargas with swisseph longitudes only."""
+    bodies = {'Lagna': lagna, **planets}
+    d9 = {name: calc_navamsha(data['longitude']) for name, data in bodies.items()}
+    d10 = {name: calc_dashamsha(data['longitude']) for name, data in bodies.items()}
+    d4 = {name: calc_chaturthamsha(data['longitude']) for name, data in bodies.items()}
+    d5 = {name: calc_panchamsha(data['longitude']) for name, data in bodies.items()}
+
+    def as_struct(chart):
+        return {
+            name: {'sign': sign, 'sign_idx': sign_idx}
+            for name, (sign, sign_idx) in chart.items()
+        }
+
+    return {
+        'D9': as_struct(d9),
+        'D10': as_struct(d10),
+        'D4': as_struct(d4),
+        'D5': as_struct(d5),
+    }, d9, d10, d4, d5
+
+def empty_ashtakavarga():
+    return {
+        'sarvashtakavarga': {sign: 0 for sign in SIGNS},
+        'bhinnashtakavarga': {
+            planet: {sign: 0 for sign in SIGNS}
+            for planet in ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']
+        },
+        'sav_total': 0,
+        'sodhya_pindas': None,
+    }
 
 def calc_chara_karakas_7k8k(planets):
     """Calculate Chara Karakas (7K primary/KN Rao, 8K reference)"""
@@ -450,6 +497,12 @@ def calc_transits(lagna_sign_idx, moon_sign_idx):
 
 def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/Kolkata"):
     """计算完整星盘数据"""
+    warnings = []
+    if _dashaflow_error is not None:
+        warnings.append(f"dashaflow unavailable; using swisseph-only fallback helpers: {_dashaflow_error}")
+    for err in _load_errors:
+        warnings.append(f"optional PyJHora module unavailable: {err}")
+
     jd = to_jd(year, month, day, hour, minute, tz_str)
     ayanamsa = swe.get_ayanamsa_ut(jd)
     
@@ -492,11 +545,19 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
         'nakshatra': get_nakshatra(ketu_lon)
     }
     
-    # 4. SAV/BAV (PyJHora — no fallback)
+    # 4. SAV/BAV (PyJHora if available; non-blocking fallback otherwise)
     tz = pytz.timezone(tz_str)
     _tz_dt = tz.localize(datetime(year, month, day, hour, minute))
     _tz_offset = _tz_dt.utcoffset().total_seconds() / 3600.0
-    ashtak = _av_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
+    if _av_pyjhora is not None:
+        try:
+            ashtak = _av_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
+        except Exception as e:
+            warnings.append(f"SAV/BAV skipped; PyJHora ashtakavarga failed: {type(e).__name__}: {e}")
+            ashtak = empty_ashtakavarga()
+    else:
+        warnings.append("SAV/BAV skipped; PyJHora ashtakavarga module is unavailable.")
+        ashtak = empty_ashtakavarga()
     
     # Map SAV to houses
     sav_by_house = {}
@@ -505,12 +566,17 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
         sign_name = SIGNS[sign_idx]
         sav_by_house[h] = {'sign': sign_name, 'value': ashtak['sarvashtakavarga'].get(sign_name, 0)}
     
-    # 5. Divisional charts (PyJHora: 15 charts)
+    # 5. Divisional charts (PyJHora if available; swisseph formula fallback)
     if _div_pyjhora is not None:
-        divisional_charts = _div_pyjhora(
-            year, month, day, hour, minute, lat, lon, _tz_offset
-        )
+        try:
+            divisional_charts = _div_pyjhora(
+                year, month, day, hour, minute, lat, lon, _tz_offset
+            )
+        except Exception as e:
+            warnings.append(f"PyJHora divisional charts skipped; using swisseph fallback D9/D10/D4/D5: {type(e).__name__}: {e}")
+            divisional_charts = {}
     else:
+        warnings.append("PyJHora divisional charts unavailable; using swisseph fallback D9/D10/D4/D5.")
         divisional_charts = {}
     
     # Extract d9/d10/d4/d5 in legacy (sign_name, sign_idx) format for backward compat
@@ -523,7 +589,7 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
         d4 = _legacy_fmt('D4')
         d5 = _legacy_fmt('D5')
     else:
-        d9, d10, d4, d5 = {}, {}, {}, {}
+        divisional_charts, d9, d10, d4, d5 = calc_fallback_divisional_charts(lagna, planets)
     
     # Vargottama check
     vargottama = {}
@@ -632,13 +698,29 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
         if planet in planets:
             info['lord_house'] = planets[planet]['house']
     
-    # 11. Vimsottari Dasha (PyJHora — no fallback)
-    dashas = _dasha_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
+    # 11. Vimsottari Dasha (PyJHora if available; swisseph Moon fallback)
+    if _dasha_pyjhora is not None:
+        try:
+            dashas = _dasha_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
+        except Exception as e:
+            warnings.append(f"PyJHora dasha skipped; using swisseph Moon Vimshottari fallback: {type(e).__name__}: {e}")
+            dashas = calc_vimsottari_dasha(planets['Moon']['longitude'], year, month, day, hour, minute)
+    else:
+        warnings.append("PyJHora dasha unavailable; using swisseph Moon Vimshottari fallback.")
+        dashas = calc_vimsottari_dasha(planets['Moon']['longitude'], year, month, day, hour, minute)
     
-    # 12. Shadbala (PyJHora + 9 bug fixes — no fallback)
-    shadbala_data = _shadbala_pyjhora(
-        year, month, day, hour, minute, lat, lon, _tz_offset
-    )
+    # 12. Shadbala (advanced PyJHora module; skipped in fallback mode)
+    if _shadbala_pyjhora is not None:
+        try:
+            shadbala_data = _shadbala_pyjhora(
+                year, month, day, hour, minute, lat, lon, _tz_offset
+            )
+        except Exception as e:
+            warnings.append(f"Shadbala skipped; PyJHora shadbala failed: {type(e).__name__}: {e}")
+            shadbala_data = {'error': 'skipped in swisseph fallback mode'}
+    else:
+        warnings.append("Shadbala skipped; PyJHora shadbala module is unavailable.")
+        shadbala_data = {'error': 'skipped in swisseph fallback mode'}
     
     # 13. Moon phase
     moon_sun_diff = (planets['Moon']['longitude'] - planets['Sun']['longitude']) % 360
@@ -670,8 +752,8 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
                 special_lagnas = _special_lagnas_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
             if _vargeeya_bala_pyjhora:
                 vargeeya_bala = _vargeeya_bala_pyjhora(year, month, day, hour, minute, lat, lon, _tz_offset)
-        except Exception:
-            pass
+        except Exception as e:
+            warnings.append(f"Optional PyJHora extras skipped: {type(e).__name__}: {e}")
     
     return {
         'ayanamsa': ayanamsa,
@@ -697,6 +779,15 @@ def calculate_full_chart(year, month, day, hour, minute, lat, lon, tz_str="Asia/
         'bhava_bala': bhava_bala,
         'special_lagnas': special_lagnas,
         'vargeeya_bala': vargeeya_bala,
+        'warnings': warnings,
+        'data_sources': {
+            'base_chart': 'swisseph fallback',
+            'ayanamsa': 'Lahiri',
+            'house_system': 'whole sign',
+            'sav_bav': 'PyJHora' if ashtak['sav_total'] else 'skipped',
+            'shadbala': 'PyJHora' if 'error' not in shadbala_data else 'skipped',
+            'dasha': 'PyJHora' if _dasha_pyjhora is not None and not any('dasha skipped' in w.lower() for w in warnings) else 'swisseph fallback',
+        },
     }
 
 
